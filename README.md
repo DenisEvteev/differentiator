@@ -1,3 +1,3 @@
 ###DIFFERENTIATOR
 
-![text](https://github.com/DenisEvteev/differentiator/tree/master/picture/diff_image.svg)
+![text](https://github.com/DenisEvteev/differentiator/blob/master/picture/diff_image.svg)
