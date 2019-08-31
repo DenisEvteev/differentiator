@@ -3,8 +3,7 @@
 This is my pivotal project of the summer.
 It took me about ten days to write it
 
------------------------------------------------
-
+----------------------------------------
 In input my program gets string with math expression and at this moment it must 
 have the definite form which contain such tokens :
 * float values
@@ -13,10 +12,8 @@ have the definite form which contain such tokens :
 arccos -> 'a', log -> 'l')
 * binary operators ('-', '+', '*', '/', '^')
 
-The math expression cannot has any spaces
-
-For example :
------------------------------------------------
+The math expression cannot have any spaces
+####For example : 
 
 if you want to get derivative from function `f(x) = sin(x)*arcsin(x^2)`
 in this syntax you must write like `s(x)*n(x^2)`
@@ -46,16 +43,13 @@ The last function which differentiator calls is LaTeX() - which dump all the res
 
 ----------------------------------------------------------------------------
 
-And finally some examples of working differentiator :
----------------------------------------------
+####And finally some examples of working differentiator :
 1. [func_1](https://github.com/DenisEvteev/differentiator/blob/master/out/func_1.pdf)
 
 2. [func_2](https://github.com/DenisEvteev/differentiator/blob/master/out/func_2.pdf)
 
 3. [func_3](https://github.com/DenisEvteev/differentiator/blob/master/out/func_3.pdf)
-
-And for the future of the project TODO list :
------------------------------------------------
+###And for the future of the project TODO list :
 
 * [ ] Examine the input expression for errors
 * [ ] Convert input expression with correct math form of functions to tokens name (sin -> 's', arccos -> 'c')
