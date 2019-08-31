@@ -1,0 +1,16 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\title{Дифференциатор с выводом производной в \LaTeX}
+\author{Евтеев Денис}\date{\today}
+\begin{document}
+\maketitle
+
+\flushleft{\textbf{\large{Исходная функция :}}}
+\center{\fbox{$f(x) = x^{\left(\frac{\sin{}\left(x\right)}{\log_{3{}}{\left(x^{2}\right)}}\right)}$}}\\[1cm]
+\flushleft{\textbf{\large{Производная исходной функции :}}}\\[2mm]\center{\fbox{$f'(x) = x^{\left(\frac{\sin{}\left(x\right)}{\log_{3{}}{\left(x^{2}\right)}}\right)}{}\cdot{}\left(\frac{\left(\cos{}\left(x\right){}\cdot{}\log_{3{}}{\left(x^{2}\right)}{}-{}\sin{}\left(x\right){}\cdot{}\frac{\frac{x^{2}{}\cdot{}2{}\cdot{}\frac{1{}}{x}}{x^{2}}{}\cdot{}\ln \left(3\right)}{\left(\ln \left(3\right)\right)^{2}}\right)}{\left(\log_{3{}}{\left(x^{2}\right)}\right)^{2}}{}\cdot{}\ln \left(x\right){}+{}\frac{\sin{}\left(x\right)}{\log_{3{}}{\left(x^{2}\right)}}{}\cdot{}\frac{1{}}{x}\right)$}}
+
+
+\end{document}

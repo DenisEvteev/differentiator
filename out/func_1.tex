@@ -1,0 +1,16 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\title{Дифференциатор с выводом производной в \LaTeX}
+\author{Евтеев Денис}\date{\today}
+\begin{document}
+\maketitle
+
+\flushleft{\textbf{\large{Исходная функция :}}}
+\center{\fbox{$f(x) = \frac{x}{\arccos{}\left(3{}\cdot{}x\right)}$}}\\[1cm]
+\flushleft{\textbf{\large{Производная исходной функции :}}}\\[2mm]\center{\fbox{$f'(x) = \frac{\left(\arccos{}\left(3{}\cdot{}x\right){}-{}x{}\cdot{}\left(-\frac{3{}}{\sqrt{\left(1{}-{}\left(\left(3{}\cdot{}x\right)\right)^{2}\right)}}\right)\right)}{\left(\arccos{}\left(3{}\cdot{}x\right)\right)^{2}}$}}
+
+
+\end{document}
