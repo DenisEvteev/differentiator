@@ -5,11 +5,10 @@
 #ifndef PARCE_CALCULATOR_OBJ_HPP
 #define PARCE_CALCULATOR_OBJ_HPP
 
-#include "/home/denis/CLionProjects/vec_lib/TrackingAllocator.hpp"
+#include "TrackingAllocator.hpp"
+#include <iostream>
 
 #define SALT -666
-
-#define type(type) static_cast<int>(Token::type)
 
 /*This is the base class for different types of nodes These are:
  * 1) values will contain float value                 : 1, 10.02, -19, -1002.4
@@ -17,7 +16,7 @@
  * 3) functions will contain char field with it name  :   s, c, n, l
  * 4) unknown will contain char symbols like          :   x, y, z*/
 
-enum class Token {
+enum Token {
     Value,
     Operator,
     Func,
@@ -39,8 +38,6 @@ public:
     Obj(const Obj& obj) = delete;
 
 
-    virtual ~Obj();
-
     virtual Obj* operator()(Obj* left, Obj* right);
 
     //------------setters---------------------//
@@ -51,9 +48,9 @@ public:
 
     void MakeChild(Obj* child);
 
-    virtual void print_info()const;
+    virtual void print_info() const { std::cout << "Type of this object is : " << type_ << std::endl; }
 
-    virtual Obj* copy()const;
+    virtual Obj* copy() const {};
 
     void remove(Obj* root);
 

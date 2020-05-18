@@ -4,47 +4,68 @@
 
 #include "BinaryTree.hpp"
 
+BinaryTree::ptr_print* BinaryTree::printer    = nullptr;
+BinaryTree::ptr_funcs* BinaryTree::simplifier = nullptr;
+String               * BinaryTree::func_names = nullptr;
 
-const BinaryTree::map BinaryTree::func_name = {{'s', "\\sin"}, {'c', "\\cos"}, {'n', "\\arcsin"},
-                                         {'l', "\\log"}, {'a', "\\arccos"}, {'t', "\\tg"},
-                                         {'g', "\\ctg"}};
+void BinaryTree::create_static_objects() {
+	printer = new ptr_print[SIZE_ARRAY_PRINT];
+	printer[0] = &BinaryTree::PrintValue;
+	printer[1] = &BinaryTree::PrintOperator;
+	printer[2] = &BinaryTree::PrintFunc;
+	printer[3] = &BinaryTree::PrintUnknown;
 
-const BinaryTree::ar_simpl BinaryTree::simpl_funcs = {{'^', &BinaryTree::SimplifyExponent},
-                                                      {'+', &BinaryTree::SimplifyPlus},
-                                                      {'-', &BinaryTree::SimplifyMinus},
-                                                      {'*', &BinaryTree::SimplifyMultiplication},
-                                                      {'/', &BinaryTree::SimplifyDivision}};
+	simplifier = new ptr_funcs[SIZE_ARRAY_SIMPLIFY];
+	simplifier[0] = &BinaryTree::SimplifyPlus;
+	simplifier[1] = &BinaryTree::SimplifyMinus;
+	simplifier[2] = &BinaryTree::SimplifyMultiplication;
+	simplifier[3] = &BinaryTree::SimplifyDivision;
+	simplifier[4] = &BinaryTree::SimplifyExponent;
 
+	func_names = new String[SIZE_ARRAY_FUNCTIONS]; //at this point just default constructor will work
+	/*All objects below will be created and then moved to the array of Strings*/
+	func_names[0] = String("\\sin");
+	func_names[1] = String("\\cos");
+	func_names[2] = String("\\arcsin");
+	func_names[3] = String("\\log");
+	func_names[4] = String("\\arccos");
+	func_names[5] = String("\\tg");
+	func_names[6] = String("\\ctg");
 
-BinaryTree::al_ptr_f BinaryTree::alloc_print = BinaryTree::al_ptr_f();
-
-BinaryTree::BinaryTree(Obj *root) : __root(root) {
-    func_print_type = b_traits::allocate(BinaryTree::alloc_print, SIZE_ARRAY_PRINT);
-    b_traits::construct(BinaryTree::alloc_print, func_print_type, &BinaryTree::PrintValue);
-    b_traits::construct(BinaryTree::alloc_print, func_print_type + 1, &BinaryTree::PrintOperator);
-    b_traits::construct(BinaryTree::alloc_print, func_print_type + 2, &BinaryTree::PrintFunc);
-    b_traits::construct(BinaryTree::alloc_print, func_print_type + 3, &BinaryTree::PrintUnknown);
 }
 
+void BinaryTree::clean_static_storage() {
+	delete [] printer;
+	delete [] simplifier;
+	delete [] func_names;
+}
+
+BinaryTree::~BinaryTree()
+{
+	clear(root_);
+}
+
+BinaryTree::BinaryTree(Obj *root) : root_(root) {
+	assert(root_);
+}
+
+BinaryTree& BinaryTree::operator=(BinaryTree&& rhs) noexcept {
+	root_ = rhs.root_;
+	rhs.root_ = nullptr;
+	return *this;
+}
 
 void BinaryTree::set_root(Obj* root){
-    __root = root;
-}
-
-BinaryTree::~BinaryTree(){
-    for(int i = 0; i < SIZE_ARRAY_PRINT; ++i)
-        b_traits::destroy(BinaryTree::alloc_print, func_print_type + i);
-
-    b_traits::deallocate(BinaryTree::alloc_print, func_print_type, SIZE_ARRAY_PRINT);
-    __root = nullptr;
+	assert(root_ == nullptr); //otherwise this operation seems to be very strange
+    root_ = root;
 }
 
 void BinaryTree::PrintValue(std::ofstream& out, Obj* root)const{
-    out << dynamic_cast<Number*>(root)->get_val();
+	assert(root);
+    out << static_cast<Number*>(root)->get_val();
     if(root->get_parent() && (root->get_parent())->get_right() != root
        && dynamic_cast<Symbol*>(root->get_parent())->get_name() != '^')
         out << "{}";
-
     out.flush();
 }
 
@@ -52,7 +73,7 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
     //this case is only for operator with name -
     if(!root->get_left()){
         out << "\\left(";
-        out << dynamic_cast<Symbol*>(root)->get_name();
+        out << static_cast<Symbol*>(root)->get_name();
         dump_tree(root->get_right(), out);
         out << "\\right)";
         out.flush();
@@ -61,12 +82,12 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
     else{
         if(CheckParentPriority(root))
             out << "\\left(";
-        auto op = dynamic_cast<Symbol*>(root);
+        auto op = static_cast<Symbol*>(root);
 
         switch(op->get_name()){
             case '*':{
                 dump_tree(root->get_left(), out);
-                if(root->get_left()->get_type() != type(Value))
+                if(root->get_left()->get_type() != Value)
                     out << "{}";
 
                 out << "\\cdot" << "{}";
@@ -78,14 +99,14 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
 
             case '^':{
 
-                if(root->get_right()->get_type() == type(Value)
-                && dynamic_cast<Number*>(root->get_right())->get_val() == 0.5){
+                if(root->get_right()->get_type() == Value
+                && static_cast<Number*>(root->get_right())->get_val() == 0.5){
                     out << "\\sqrt{";
                     dump_tree(root->get_left(), out);
                     out << "}";
                     break;
                 }
-                if(root->get_left()->get_type() != type(Value) && root->get_left()->get_type() != type(Unknown)){
+                if(root->get_left()->get_type() != Value && root->get_left()->get_type() != Unknown){
                     out << "\\left(";
                     dump_tree(root->get_left(), out);
                     out << "\\right)";
@@ -114,7 +135,7 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
             }
             default:{
                 dump_tree(root->get_left(), out);
-                if(root->get_left()->get_type() != type(Value))
+                if(root->get_left()->get_type() != Value)
                     out << "{}";
 
                 out << op->get_name() << "{}";
@@ -124,9 +145,6 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
             }
         }
 
-
-
-
         if(CheckParentPriority(root))
             out << "\\right)";
 
@@ -134,19 +152,18 @@ void BinaryTree::PrintOperator(std::ofstream &out, Obj *root) const {
     }
 }
 
-
 void BinaryTree::PrintFunc(std::ofstream &out, Obj *root) const {
-    auto name_f = dynamic_cast<Symbol*>(root);
+    auto name_f = static_cast<Symbol*>(root);
 
     if(name_f->get_name() == 'l'){
-        auto base = dynamic_cast<Symbol*>(name_f->get_left());
+        auto base = static_cast<Symbol*>(name_f->get_left());
         if(base && base->get_name() == 'e'){
             out << "\\ln \\left(";
             dump_tree(root->get_right(), out);
             out << "\\right)";
         }
-        else if(root->get_left()->get_type() == type(Value) &&
-        dynamic_cast<Number*>(root->get_left())->get_val() == 10){
+        else if(root->get_left()->get_type() == Value &&
+        static_cast<Number*>(root->get_left())->get_val() == 10){
             out << "\\lg \\left(";
             dump_tree(root->get_right(), out);
             out << "\\right)";
@@ -161,7 +178,9 @@ void BinaryTree::PrintFunc(std::ofstream &out, Obj *root) const {
 
     }
     else{
-        out << BinaryTree::func_name.at(name_f->get_name()) << "{}\\left(";
+    	int id = name_f->get_id() - BOUND;
+    	assert(id >= 0 && id <= 6);
+        out << func_names[id].GetStr() << "{}\\left(";
         dump_tree(root->get_right(), out);
         out << "\\right)";
     }
@@ -169,20 +188,22 @@ void BinaryTree::PrintFunc(std::ofstream &out, Obj *root) const {
 }
 
 void BinaryTree::PrintUnknown(std::ofstream &out, Obj *root) const {
-    out << dynamic_cast<Symbol*>(root)->get_name();
+    out << static_cast<Symbol*>(root)->get_name();
     out.flush();
 }
 
 void BinaryTree::dump_tree(Obj* root,  std::ofstream& out) const{
     if(!root)
         return;
-
-    (this->*func_print_type[root->get_type()])(out, root);
+    int type = root->get_type();
+    assert(type >= 0 && type <= 3);
+    std::invoke(printer[type], *this, out, root);
 }
 
 bool BinaryTree::CheckParentPriority(Obj* obj)const{
-    auto cur_tok = dynamic_cast<Symbol*>(obj);
-    auto prev_tok = dynamic_cast<Symbol*>(obj->get_parent());
+	assert(obj);
+    auto cur_tok = static_cast<Symbol*>(obj);
+    auto prev_tok = static_cast<Symbol*>(obj->get_parent());
 
     if(!prev_tok)
         return false;
@@ -195,10 +216,6 @@ bool BinaryTree::CheckParentPriority(Obj* obj)const{
         return true;
 
     return false;
-}
-
-Obj* BinaryTree::get_root() const {
-    return __root;
 }
 
 void BinaryTree::clear(Obj* root) {
@@ -226,30 +243,17 @@ Obj* BinaryTree::Calculate(Obj* root) {
 
     switch (root->get_type()) {
 
-        case type(Value): {
+        case Value   :
+		case Unknown :
+		case Func    :
             return root;
-        }
 
-        case type(Unknown):{
-            return root;
-        }
-
-        case type(Func): {
-            return root;
-        }
-
-        case type(Operator): {
-            auto op = dynamic_cast<Symbol *>(root);
-            try{
-                return (this->*simpl_funcs.at(op->get_name()))(op);
-            }catch(const std::out_of_range& ex){
-
-                std::cout << ex.what() << '\n';
-                std::cout << "__ERROR__ at line :" << __LINE__ << std::endl;
-                std::cout << "Function : " << __PRETTY_FUNCTION__ << std::endl;
-            }
-
-        }
+		case Operator : {
+            auto op = static_cast<Symbol *>(root);
+            int id = op->get_id();
+            assert(id <= 4 && id >= 0);
+            return std::invoke(simplifier[id], *this, op);
+		}
         default : {
             std::cout << "No such type of nodes\n";
             std::cout << "__ERROR__ in function : " << __PRETTY_FUNCTION__ << std::endl;
@@ -366,7 +370,7 @@ Obj* BinaryTree::SimplifyExponent(Obj* root){
 
 Obj* BinaryTree::MakeNumericalNode(Obj* root, float value){
     Number* num = nullptr;
-    Obj* new_root = num->create(type(Value), value);
+    Obj* new_root = num->create(Value, value);
 
     if(root->get_parent())
         root->MakeChild(new_root);
@@ -379,22 +383,22 @@ Obj* BinaryTree::MakeNumericalNode(Obj* root, float value){
 
 Obj* BinaryTree::MakeCount(Obj* root){
     if(root->get_right() &&
-    root->get_right()->get_type() == type(Value)
-    && ((root->get_left() && root->get_left()->get_type() == type(Value)) || !root->get_left())){
+    root->get_right()->get_type() == Value
+    && ((root->get_left() && root->get_left()->get_type() == Value) || !root->get_left())){
 
-        auto symbol = dynamic_cast<Symbol*>(root);
+        auto symbol = static_cast<Symbol*>(root);
 
         Number* pivotal = nullptr;
 
         if(!root->get_left())
-            pivotal = symbol->calc(dynamic_cast<Number*>(root->get_right())->get_val(), 0);
+            pivotal = symbol->calc(static_cast<Number*>(root->get_right())->get_val(), 0);
         else
-            pivotal = symbol->calc(dynamic_cast<Number*>(root->get_right())->get_val(),
-                    dynamic_cast<Number*>(root->get_left())->get_val());
+            pivotal = symbol->calc(static_cast<Number*>(root->get_right())->get_val(),
+                    static_cast<Number*>(root->get_left())->get_val());
 
 
         if(!root->get_parent()) {
-            __root = pivotal;
+            root_ = pivotal;
         }else {
             pivotal->set_parent(root->get_parent());
             root->MakeChild(pivotal);
@@ -406,7 +410,6 @@ Obj* BinaryTree::MakeCount(Obj* root){
 
     return root;
 }
-
 
 void BinaryTree::SimplifyTree(Obj* obj){
 
@@ -423,6 +426,6 @@ void BinaryTree::SimplifyTree(Obj* obj){
     if(pivotal == obj || pivotal->get_parent())
         return;
 
-    __root = pivotal;
+    root_ = pivotal;
 
 }

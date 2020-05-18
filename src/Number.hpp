@@ -14,8 +14,6 @@ class Number : public Obj{
 public:
     Number(int code, float val);
 
-    ~Number()override;
-
     //move constructor
     Number(Number&& num)noexcept;
 

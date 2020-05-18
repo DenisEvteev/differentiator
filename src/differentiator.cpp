@@ -3,103 +3,82 @@
 //
 
 #include "differentiator.hpp"
-
+//#define DEBUG
 
 differentiator::differentiator(){
     std::cout << "Enter the expresion : ";
-    std::cin >> _str;
+    std::cin >> _str;  //initial string in traditional mathematical notation
 
-    if(_str.size() != _str.GetNumBytes() - 1){
-        std::cout << "Bad expression! The program will over!" << std::endl;
-        return;
-    }
+    if(_str.size() != _str.GetNumBytes() - 1)
+    	throw std::invalid_argument("not only ASCII symbols in the input string");
+
+    _str = _str.ParseShortMathNotation(); // create the short mathematical notation of the input expression
+#ifdef DEBUG
+	std::cout << _str << std::endl;
+#endif
     _cur = _str.GetStr();
 
-    primary_expression = nullptr;
-    differentiate_expression = nullptr;
+    diff_type = new ptr_array_funcs[SIZE_ARRAY_PTR_FUNC];
+    diff_type[0] = &differentiator::Diff_Value;
+	diff_type[1] = &differentiator::Diff_Operator;
+	diff_type[2] = &differentiator::Diff_Func;
+	diff_type[3] = &differentiator::Diff_Unknown;
 
-    diff_type = f_traits::allocate(differentiator::alloc, SIZE_ARRAY_FOR_STR);
-    f_traits::construct(differentiator::alloc, diff_type, &differentiator::Diff_Value);
-    f_traits::construct(differentiator::alloc, diff_type + 1, &differentiator::Diff_Operator);
-    f_traits::construct(differentiator::alloc, diff_type + 2, &differentiator::Diff_Func);
-    f_traits::construct(differentiator::alloc, diff_type + 3, &differentiator::Diff_Unknown);
+	func = new ptr_array_funcs[SIZE_ARRAY_EXACT_SYMBOL_DIFF];
+	func[0] = &differentiator::Plus;
+	func[1] = &differentiator::Minus;
+	func[2] = &differentiator::Multiplication;
+	func[3] = &differentiator::Division;
+	func[4] = &differentiator::Exponentiation;
 
-
-    //operators
-    funcs['-'] = &differentiator::Minus;
-    funcs['+'] = &differentiator::Plus;
-    funcs['*'] = &differentiator::Multiplication;
-    funcs['/'] = &differentiator::Division;
-    funcs['^'] = &differentiator::Exponentiation;
-
-    //functions
-    funcs['s'] = &differentiator::Sinus;
-    funcs['c'] = &differentiator::Cosinus;
-    funcs['l'] = &differentiator::Logarithm;
-    funcs['n'] = &differentiator::Arcsin;
-    funcs['a'] = &differentiator::Arccos;
-    funcs['t'] = &differentiator::Tg;
-    funcs['g'] = &differentiator::Ctg;
+	func[5] = &differentiator::Sinus;
+	func[6] = &differentiator::Cosinus;
+	func[7] = &differentiator::Arcsin;
+	func[8] = &differentiator::Logarithm;
+	func[9] = &differentiator::Arccos;
+	func[10] = &differentiator::Tg;
+	func[11] = &differentiator::Ctg;
 
 }
 
 Obj* differentiator::Create(int type, const char c) const{
     Symbol* symbol = nullptr;
-
     return symbol->create(type, c);
 }
 
 Obj* differentiator::Create(float v)const {
     Number* num = nullptr;
-
-    return num->create(type(Value), v);
+    return num->create(Value, v);
 }
-
-differentiator::alloc_ptr_f differentiator::alloc = differentiator::alloc_ptr_f();
 
 differentiator::~differentiator() {
-    for(int i = 0; i < SIZE_ARRAY_FOR_STR; ++i)
-        f_traits::destroy(differentiator::alloc, diff_type + i);
 
-    f_traits::deallocate(differentiator::alloc, diff_type, SIZE_ARRAY_FOR_STR);
-
-    diff_type = nullptr;
-    _cur = nullptr;
-    primary_expression = nullptr;
-    differentiate_expression = nullptr;
-
-}
-
-void differentiator::CreatePrimaryTree() {
-    primary_expression = new BinaryTree(GetG());
-}
-
-void differentiator::CreateDiffTree(){
-    differentiate_expression = new BinaryTree(Differentiate(primary_expression->get_root()));
+	delete [] diff_type;
+	delete [] func;
 }
 
 void differentiator::ShowResult(){
 
-    CreatePrimaryTree();
-    primary_expression->SimplifyTree(primary_expression->get_root());
+	BinaryTree::create_static_objects();
 
-    CreateDiffTree();
-    differentiate_expression->SimplifyTree(differentiate_expression->get_root());
+	/*In my realization in constructor of tree */
+	primary_expression = BinaryTree(GetG());
+
+    primary_expression.SimplifyTree(primary_expression.get_root());
+
+    differentiate_expression = BinaryTree(Differentiate(primary_expression.get_root()));
+
+    differentiate_expression.SimplifyTree(differentiate_expression.get_root());
 
     LaTeX();
 
-    primary_expression->clear(primary_expression->get_root());
+    BinaryTree::clean_static_storage();
 
-    differentiate_expression->clear(differentiate_expression->get_root());
-
-    delete differentiate_expression;
-
-    delete primary_expression;
 }
 
 void differentiator::LaTeX()const{
-    std::ofstream output("/home/denis/CLionProjects/Parce_Calculator/res/output.tex");
-    if(!output){
+    std::ofstream output("../new_tests/output.tex");
+    if(output.fail()){
         std::cerr << "output.tex cannot be made or opened\n";
         return;
     }
@@ -122,14 +101,14 @@ void differentiator::LaTeX()const{
     output << "\\flushleft{\\textbf{\\large{Исходная функция :}}}\n"
               "\\center{\\fbox{$f(x) = ";
 
-    primary_expression->dump_tree(primary_expression->get_root(), output);
+    primary_expression.dump_tree(primary_expression.get_root(), output);
 
     output << "$}}\\\\[1cm]\n";
 
     output << "\\flushleft{\\textbf{\\large{Производная исходной функции :}}}\\\\[2mm]"
               "\\center{\\fbox{$f'(x) = ";
 
-    differentiate_expression->dump_tree(differentiate_expression->get_root(), output);
+    differentiate_expression.dump_tree(differentiate_expression.get_root(), output);
     output << "$}}\n\n\n";
 
     output << "\\end{document}\n";
@@ -142,7 +121,7 @@ void differentiator::LaTeX()const{
 Obj* differentiator::GetG() {
 
 
-    Obj* root = GetE();
+    auto root = GetE();
 
     assert(_cur == _str.GetStr() + _str.size());
 
@@ -202,17 +181,13 @@ Obj* differentiator::GetT(){
 
         right_ch = GetP();
 
-        pivotal = Create(type(Operator), symbol);
+        pivotal = Create(Operator, symbol);
 
         (*pivotal)(left_ch, right_ch);
     }
 
     return pivotal;
 }
-
-
-
-//all data in _str is very correct !!!
 
 Obj* differentiator::GetE(){
 
@@ -233,7 +208,7 @@ Obj* differentiator::GetE(){
 
         if(!left_ch) {
             extra_obj = GetP();
-            left_ch = Create(type(Operator), symbol);
+            left_ch = Create(Operator, symbol);
             (*left_ch)(nullptr, extra_obj);
             symbol = *_cur;
             ++_cur;
@@ -248,7 +223,7 @@ Obj* differentiator::GetE(){
 
         right_ch = GetT();
 
-        pivotal = Create(type(Operator), symbol);
+        pivotal = Create(Operator, symbol);
 
         //this operator will make children for pivotal;
         (*pivotal)(left_ch, right_ch);
@@ -269,11 +244,11 @@ Obj* differentiator::GetP(){
     }
 
     Obj* unknown = GetU();
-    Obj* func = nullptr;
+    Obj* function = nullptr;
 
     if(!unknown){
-        func = GetF();
-        if(!func){
+        function = GetF();
+        if(!function){
             pivotal = GetN();
             return pivotal;
         }
@@ -291,7 +266,7 @@ Obj* differentiator::GetF(){
     if(*_cur == func(SIN) || *_cur == func(COS) || *_cur == func(ARCCOS) || *_cur == func(ARCSIN)
     || *_cur == func(TG) || *_cur == func(CTG)){
 
-        pivotal = Create(type(Func), *_cur);
+        pivotal = Create(Func, *_cur);
         ++_cur;
         right_ch = GetP();
         (*pivotal)(left_ch, right_ch);
@@ -299,7 +274,7 @@ Obj* differentiator::GetF(){
     }
 
     else if (*_cur == func(LOG)){
-        pivotal = Create(type(Func), *_cur);
+        pivotal = Create(Func, *_cur);
         _cur += 2;
         left_ch = GetE();
         assert(*_cur == ',');
@@ -317,8 +292,8 @@ Obj* differentiator::GetF(){
 Obj* differentiator::GetU(){
     Obj* unknown = nullptr;
 
-    if(*_cur == 'x' || *_cur == 'y' || *_cur == 'z' || (*_cur == 'e' && *(_cur - 2) == 'l')){
-        unknown = Create(type(Unknown), *_cur);
+    if(*_cur == 'x' || (*_cur == 'e' && *(_cur - 2) == 'l')){
+        unknown = Create(Unknown, *_cur);
         ++_cur;
         return unknown;
     }
@@ -330,26 +305,21 @@ Obj* differentiator::Differentiate(Obj* root)const{
     if(!root)
         return nullptr;
 
-    Obj* diff_root_ = (this->*diff_type[root->get_type()])(root);
-    
-    return diff_root_;
+    int type = root->get_type();
+    assert(type >= 0 && type <= 3);
+    return std::invoke(diff_type[type], *this, root);;
 }
 
 Obj* differentiator::Diff_Value(Obj* obj)const{
-
-    return Create(0);
+	return Create(0);
 }
 
 Obj* differentiator::Diff_Func(Obj* obj)const{
-    auto name_f = dynamic_cast<Symbol*>(obj);
-    try{
-        return (this->*funcs.at(name_f->get_name()))(name_f);
-    }catch(const std::out_of_range& ex){
-        std::cout << ex.what() << '\n';
-        std::cout << "__ERROR__ at line :" << __LINE__ << std::endl;
-        std::cout << "Function : " << __PRETTY_FUNCTION__ << std::endl;
-        return nullptr;
-    }
+    auto name_f = static_cast<Symbol*>(obj);
+
+    int id = name_f->get_id();
+    assert(id >= 0 && id <= 11);
+    return std::invoke(func[id], *this, name_f);
 }
 
 Obj* differentiator::Diff_Operator(Obj* obj)const{
@@ -367,16 +337,16 @@ Obj* differentiator::Multiplication(Obj *obj)const {
 
 Obj* differentiator::MakeOperatorForMulDiv(Obj* obj, const char link)const{
 
-    Obj* op = Create(type(Operator), link);
+    auto op = Create(Operator, link);
 
-    Obj* left_diff = Differentiate(obj->get_left());
-    Obj* right_diff = Differentiate(obj->get_right());
+    auto left_diff = Differentiate(obj->get_left());
+    auto right_diff = Differentiate(obj->get_right());
 
-    Obj* left_multiplication = Create(type(Operator), '*');
-    Obj* right_multiplication = Create(type(Operator), '*');
+    auto left_multiplication = Create(Operator, '*');
+    auto right_multiplication = Create(Operator, '*');
 
-    Obj* left_copy = make_copy(obj->get_left());
-    Obj* right_copy = make_copy(obj->get_right());
+    auto left_copy = make_copy(obj->get_left());
+    auto right_copy = make_copy(obj->get_right());
 
     (*left_multiplication)(left_diff, right_copy);
     (*right_multiplication)(left_copy, right_diff);
@@ -387,33 +357,29 @@ Obj* differentiator::MakeOperatorForMulDiv(Obj* obj, const char link)const{
 }
 
 Obj* differentiator::Division(Obj *obj) const{
-    Obj* pivotal = Create(type(Operator), '/');
-    Obj* left_ch = MakeOperatorForMulDiv(obj, '-');
-    Obj* right_ch = Create(type(Operator), '^');
+    auto pivotal = Create(Operator, '/');
+    auto left_ch = MakeOperatorForMulDiv(obj, '-');
+    auto right_ch = Create(Operator, '^');
     (*right_ch)(make_copy(obj->get_right()), Create(2));
     (*pivotal)(left_ch, right_ch);
     return pivotal;
 }
 
 Obj* differentiator::Exponentiation(Obj *obj) const{
-    Obj* pivotal = Create(type(Operator), '*');
-
+    auto pivotal = Create(Operator, '*');
 
     //this logarithm will be the left child of multiplication operator root
-    Obj* logarithm = Create(type(Func), 'l');
+    auto logarithm = Create(Func, 'l');
+    auto left_ch = make_copy(obj);
 
-
-    Obj* left_ch = make_copy(obj);
-
-    Obj* copy_left_child_obj = make_copy(obj->get_left());
-    (*logarithm)(Create(type(Unknown), 'e'), copy_left_child_obj);
-    Obj* multip = Create(type(Operator), '*');
+    auto copy_left_child_obj = make_copy(obj->get_left());
+    (*logarithm)(Create(Unknown, 'e'), copy_left_child_obj);
+    auto multip = Create(Operator, '*');
     (*multip)(make_copy(obj->get_right()), logarithm);
 
-    Obj* right_ch = Differentiate(multip);
+    auto right_ch = Differentiate(multip);
 
     (*pivotal)(left_ch, right_ch);
-
     multip->remove(multip);
 
     return pivotal;
@@ -428,10 +394,10 @@ Obj* differentiator::Plus(Obj* obj)const{
 }
 
 Obj* differentiator::PlusMinusDiff(Obj* obj, const char type)const{
-    Obj* op = Create(type(Operator), type);
+    auto op = Create(Operator, type);
 
-    Obj* left_ch = Differentiate(obj->get_left());
-    Obj* right_ch = Differentiate(obj->get_right());
+    auto left_ch = Differentiate(obj->get_left());
+    auto right_ch = Differentiate(obj->get_right());
 
     (*op)(left_ch, right_ch);
 
@@ -440,13 +406,13 @@ Obj* differentiator::PlusMinusDiff(Obj* obj, const char type)const{
 
 Obj* differentiator::Sinus(Obj* obj)const{
 
-    Obj* left_ch = make_copy(obj);
+    auto left_ch = make_copy(obj);
 
-    dynamic_cast<Symbol*>(left_ch)->set_name('c');
+    static_cast<Symbol*>(left_ch)->set_name('c');
 
-    Obj* right_ch = Differentiate(obj->get_right());
+    auto right_ch = Differentiate(obj->get_right());
 
-    Obj* pivotal = Create(type(Operator), '*');
+    auto pivotal = Create(Operator, '*');
 
     (*pivotal)(left_ch, right_ch);
 
@@ -458,44 +424,44 @@ Obj* differentiator::make_copy(Obj *obj) const {
         return nullptr;
 
     if(!obj->get_right() && !obj->get_left()){
-        Obj* pivotal = obj->copy();
+        auto pivotal = obj->copy();
         return pivotal;
     }
 
-    Obj* left_ch = make_copy(obj->get_left());
-    Symbol* op = dynamic_cast<Symbol*>(obj);
-    Obj* pivotal = Create(op->get_type(), op->get_name());
-    Obj* right_ch = make_copy(obj->get_right());
+    auto left_ch = make_copy(obj->get_left());
+    auto op = static_cast<Symbol*>(obj);
+    auto pivotal = Create(op->get_type(), op->get_name());
+    auto right_ch = make_copy(obj->get_right());
     (*pivotal)(left_ch, right_ch);
     return pivotal;
 }
 
 Obj* differentiator::Cosinus(Obj* obj)const{
-    Obj* right_ch = Differentiate(obj->get_right());
-    Obj* left_ch = Create(type(Operator), '-');
-    Obj* cope_cos_f = make_copy(obj);
-    dynamic_cast<Symbol*>(cope_cos_f)->set_name('s');
+    auto right_ch = Differentiate(obj->get_right());
+    auto left_ch = Create(Operator, '-');
+    auto cope_cos_f = make_copy(obj);
+    static_cast<Symbol*>(cope_cos_f)->set_name('s');
     (*left_ch)(nullptr, cope_cos_f);
-    Obj* pivotal = Create(type(Operator), '*');
+    Obj* pivotal = Create(Operator, '*');
     (*pivotal)(left_ch, right_ch);
     return pivotal;
 }
 
 Obj* differentiator::Logarithm(Obj* obj)const{
-    if(obj->get_left()->get_type() == type(Unknown) &&
-    dynamic_cast<Symbol*>(obj->get_left())->get_name() == 'e') {
-        Obj *pivotal = Create(type(Operator), '/');
+    if(obj->get_left()->get_type() == Unknown &&
+    static_cast<Symbol*>(obj->get_left())->get_name() == 'e') {
+        auto pivotal = Create(Operator, '/');
         (*pivotal)(Differentiate(obj->get_right()), make_copy(obj->get_right()));
         return pivotal;
     }
     else{
-        Obj* pivotal = Create(type(Operator), '/');
-        Obj* left_ln = Create(type(Func), 'l');
-        Obj* right_ln = Create(type(Func), 'l');
-        (*left_ln)(Create(type(Unknown), 'e'), make_copy(obj->get_right()));
-        (*right_ln)(Create(type(Unknown), 'e'), make_copy(obj->get_left()));
+    	auto pivotal = Create(Operator, '/');
+        auto left_ln = Create(Func, 'l');
+        auto right_ln = Create(Func, 'l');
+        (*left_ln)(Create(Unknown, 'e'), make_copy(obj->get_right()));
+        (*right_ln)(Create(Unknown, 'e'), make_copy(obj->get_left()));
         (*pivotal)(left_ln, right_ln);
-        Obj* diff_log = Differentiate(pivotal);
+        auto diff_log = Differentiate(pivotal);
         pivotal->remove(pivotal);
         return diff_log;
     }
@@ -503,44 +469,44 @@ Obj* differentiator::Logarithm(Obj* obj)const{
 }
 
 Obj* differentiator::Arcsin(Obj* obj)const{
-    Obj* pivotal = Create(type(Operator), '/');
-    Obj* left_ch = Differentiate(obj->get_right());
-    Obj* right_ch = Create(type(Operator), '^');
-    Obj* copy_func_expression = make_copy(obj->get_right());
-
-    //here i've changed the return type of operator () in Obj class
+    auto pivotal = Create(Operator, '/');
+    auto left_ch = Differentiate(obj->get_right());
+    auto right_ch = Create(Operator, '^');
+    auto copy_func_expression = make_copy(obj->get_right());
 
 
-    //It's a very strange syntax, but i liked it a bit (it's better to understand it than eating salt)
 
-    (*right_ch)((*Create(type(Operator), '-'))(Create(1),
-            (*Create(type(Operator), '^'))(copy_func_expression, Create(2)) ),
-            (*Create(type(Operator), '/'))(Create(1), Create(2)));
+    auto last =  (*Create(Operator, '/'))(Create(1), Create(2));
+    auto mid = (*Create(Operator, '^'))(copy_func_expression, Create(2));
+
+    (*right_ch)((*Create(Operator, '-'))(Create(1), mid ), last);
 
     return (*pivotal)(left_ch, right_ch);
 }
 
 Obj* differentiator::Arccos(Obj* obj)const{
-    Obj* pivotal = Create(type(Operator), '-');
+    auto pivotal = Create(Operator, '-');
     return (*pivotal)(nullptr, Arcsin(obj));
 }
 
 Obj* differentiator::Tg(Obj* obj)const{
-    Obj* pivotal = Create(type(Operator), '/');
-    Obj* diff_func = Differentiate(obj->get_right());
-    Obj* copy_func = make_copy(obj->get_right());
-    Obj* denominator = Create(type(Operator), '^');
-    (*denominator)((*Create(type(Func), func(COS)))(nullptr, copy_func), Create(2));
+	auto pivotal = Create(Operator, '/');
+    auto diff_func = Differentiate(obj->get_right());
+    auto copy_func = make_copy(obj->get_right());
+    auto denominator = Create(Operator, '^');
+    auto left = (*Create(Func, func(COS)))(nullptr, copy_func);
+    (*denominator)(left, Create(2));
     return (*pivotal)(diff_func, denominator);
 }
 
 Obj* differentiator::Ctg(Obj *obj) const{
-    Obj* pivotal = Create(type(Operator), '-');
-    Obj* right_ch = Create(type(Operator), '/');
-    Obj* diff_func = Differentiate(obj->get_right());
-    Obj* copy_func = make_copy(obj->get_right());
+    auto pivotal = Create(Operator, '-');
+    auto right_ch = Create(Operator, '/');
+    auto diff_func = Differentiate(obj->get_right());
+    auto copy_func = make_copy(obj->get_right());
 
-    //the same
-    (*right_ch)(diff_func, (*Create(type(Operator), '^'))((*Create(type(Func), func(SIN)))(nullptr, copy_func), Create(2)));
+    auto left = (*Create(Func, func(SIN)))(nullptr, copy_func);
+    auto right = (*Create(Operator, '^'))(left, Create(2));
+    (*right_ch)(diff_func, right);
     return (*pivotal)(nullptr, right_ch);
 }

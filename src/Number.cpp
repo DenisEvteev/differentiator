@@ -16,12 +16,9 @@ Number::Number(Number&& num)noexcept : Obj(num.type_, num.parent_, num.right_, n
     num.val_ = 0;
     num.type_ = SALT;
 
-    if(num.parent_)
-        num.parent_ = nullptr;
-    if(num.left_)
-        num.left_ = nullptr;
-    if(num.right_)
-        num.right_ = nullptr;
+    num.parent_ = nullptr;
+    num.left_ = nullptr;
+    num.right_ = nullptr;
 }
 
 Number& Number::operator=(Number &&num)noexcept {
@@ -38,12 +35,9 @@ Number& Number::operator=(Number &&num)noexcept {
     num.val_ = 0;
     num.type_ = SALT;
 
-    if(num.parent_)
-        num.parent_ = nullptr;
-    if(num.left_)
-        num.left_ = nullptr;
-    if(num.right_)
-        num.right_ = nullptr;
+    num.parent_ = nullptr;
+    num.left_ = nullptr;
+    num.right_ = nullptr;
     return *this;
 }
 
@@ -69,10 +63,6 @@ Obj* Number::create(Obj* obj){
         return num;
     }
     return nullptr;
-    /*else{
-        n_traits::construct(Number::alloc_, reinterpret_cast<Number*>(obj), std::move(*this));
-        return obj;
-    }*/
 }
 
 Number* Number::create(int type, float val)const{
@@ -80,16 +70,6 @@ Number* Number::create(int type, float val)const{
    Number* ptr = n_traits::allocate(Number::alloc_, 1);
    n_traits::construct(Number::alloc_, ptr, type, val);
    return ptr;
-}
-
-Number::~Number() {
-    if(right_)
-        right_ = nullptr;
-    if(left_)
-        left_ = nullptr;
-    if(parent_)
-        parent_ = nullptr;
-    val_ = 0;
 }
 
 Number::n_alloc Number::alloc_ = Number::n_alloc();

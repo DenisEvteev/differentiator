@@ -1,31 +1,23 @@
 #include <iostream>
-#include "differentiator.hpp"
-#include "/home/denis/CLionProjects/MyExceptions/MyException/My_Exception.hpp"
+#include "src/differentiator.hpp"
 
 
 void MyNewHandler();
+
+
 
 int main() {
 
     std::set_new_handler(MyNewHandler);
 
+    differentiator parser;
 
-    try{
-
-        differentiator parser;
-
-        parser.ShowResult();
-
-    }catch(My_Exception* ex){
-        std::cout << ex->what() << std::endl;
-        ex->dump_info_in_console();
-        ex->clear();
-    }
+	parser.ShowResult();
     return 0;
 
 }
 
 void MyNewHandler(){
-    std::cout << "operator new cannot allocate more memory\n";
+    std::cerr << "operator new cannot allocate more memory\n";
     std::abort();
 }

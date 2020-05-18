@@ -4,6 +4,7 @@
 
 #include "Obj.hpp"
 
+Obj::o_alloc Obj::alloc = Obj::o_alloc();
 
 Obj::Obj(int type, Obj *par, Obj *right, Obj *left) : type_(type), parent_(par), right_(right), left_(left){}
 
@@ -32,6 +33,7 @@ void Obj::set_left(Obj* left){
 void Obj::set_right(Obj *right) {
     right_ = right;
 }
+
 int Obj::get_type() const {
     return type_;
 }
@@ -53,26 +55,6 @@ Obj* Obj::create(int type)const {
     o_traits::construct(Obj::alloc, ptr, type, nullptr, nullptr, nullptr);
     return ptr;
 }
-
-
-
-void Obj::print_info()const {
-    std::cout << "Type of this object is : " << type_ << std::endl;
-}
-
-Obj::~Obj() {
-    if(right_)
-        right_ = nullptr;
-    if(left_)
-        left_ = nullptr;
-    if(parent_)
-        parent_ = nullptr;
-}
-
-
-Obj::o_alloc Obj::alloc = Obj::o_alloc();
-
-Obj* Obj::copy() const {}
 
 void Obj::remove(Obj* root) {
 

@@ -5,16 +5,19 @@
 #ifndef PARCE_CALCULATOR_PARSER_HPP
 #define PARCE_CALCULATOR_PARSER_HPP
 
-#include "/home/denis/CLionProjects/String_Lib/String.hpp"
+#include "../String_Lib/String.hpp"
+#include "TrackingAllocator.hpp"
 #include <cassert>
 #include "Number.hpp"
 #include "Symbol.hpp"
 #include "BinaryTree.hpp"
 
 #include "Obj.hpp"
-#include <map>
 
-#define SIZE_ARRAY_PTR_FUNC 4
+enum {
+	SIZE_ARRAY_PTR_FUNC = 4,
+	SIZE_ARRAY_EXACT_SYMBOL_DIFF = 12
+};
 
 #include <fstream>
 
@@ -30,32 +33,17 @@ enum class FUNC: const char{
     CTG = 'g'
 };
 
-class differentiator {
+class differentiator final {
 public:
     differentiator();
-    differentiator(const differentiator& copy) = delete;
+    differentiator(const differentiator& copy)           = delete;
     differentiator&operator=(const differentiator& copy) = delete;
     void ShowResult();
     ~differentiator();
 
 
 private:
-
-    typedef Obj* (differentiator::*ptr_array_funcs)(Obj* obj)const;
-    typedef TrackingAllocator<ptr_array_funcs> alloc_ptr_f;
-    typedef std::allocator_traits<alloc_ptr_f> f_traits;
-
-    ptr_array_funcs* diff_type = nullptr;
-
-    static alloc_ptr_f alloc;
-
-    void CreatePrimaryTree();
-    void CreateDiffTree();
-
-
-    String _str;
-    const char* _cur = nullptr;
-    Obj* GetG();
+	Obj* GetG();
     Obj* GetN();
     Obj* GetE();
     Obj* GetT();
@@ -95,10 +83,20 @@ private:
     Obj* Create(float v)const;
 
     void LaTeX()const;
-    std::map<const char, ptr_array_funcs> funcs;
 
-    BinaryTree* primary_expression;
-    BinaryTree* differentiate_expression;
+
+ private :
+    BinaryTree         primary_expression;
+    BinaryTree         differentiate_expression;
+    /*This is a pointer to an array of pointers to methods in differentiator class
+     * to */
+
+	typedef Obj* (differentiator::*ptr_array_funcs)(Obj* obj)const;
+	ptr_array_funcs *  diff_type = nullptr;
+	String             _str;
+	const char*        _cur      = nullptr;
+	ptr_array_funcs * func       = nullptr;
+
 
 };
 
