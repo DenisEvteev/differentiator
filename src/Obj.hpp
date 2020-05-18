@@ -51,8 +51,8 @@ public:
     virtual void print_info() const { std::cout << "Type of this object is : " << type_ << std::endl; }
 
     virtual Obj* copy() const {};
-
-    void remove(Obj* root);
+    virtual bool operator==(const Obj& obj) const;
+	void remove(Obj* root);
 
     Obj* create(int type)const;
 

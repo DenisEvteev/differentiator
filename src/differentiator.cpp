@@ -3,7 +3,7 @@
 //
 
 #include "differentiator.hpp"
-//#define DEBUG
+#define DEBUG
 
 differentiator::differentiator(){
     std::cout << "Enter the expresion : ";
@@ -326,9 +326,14 @@ Obj* differentiator::Diff_Operator(Obj* obj)const{
     return Diff_Func(obj);
 }
 
-Obj* differentiator::Diff_Unknown(Obj* obj)const{
+Obj* differentiator::Diff_Unknown(Obj* obj)const
+{
 
-    return Create(1);
+	/*Here I must look at the case of Unknown [e]
+	 * its derivative won't be just 1 but 0*/
+	int id = static_cast<Symbol*>(obj)->get_id();
+	assert(id == Variable || id == Exponenta);
+	return (id == Variable) ? Create(1) : Create(0);
 }
 
 Obj* differentiator::Multiplication(Obj *obj)const {

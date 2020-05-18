@@ -46,22 +46,31 @@ Obj* Obj::get_right()const{
     return right_;
 }
 
-Obj* Obj::get_parent() const {
+Obj* Obj::get_parent() const
+{
     return parent_;
 }
 
-Obj* Obj::create(int type)const {
+Obj* Obj::create(int type) const
+{
     Obj* ptr = o_traits::allocate(Obj::alloc, 1);
     o_traits::construct(Obj::alloc, ptr, type, nullptr, nullptr, nullptr);
     return ptr;
 }
 
-void Obj::remove(Obj* root) {
+bool Obj::operator==(const Obj& obj) const
+{
+    return (type_ == obj.type_);
+}
 
-    if(!root)
+void Obj::remove(Obj* root)
+{
+
+    if (!root)
         return;
 
-    if (root->get_right() == nullptr && root->get_left() == nullptr) {
+    if (root->get_right() == nullptr && root->get_left() == nullptr)
+    {
         Obj::o_traits::destroy(Obj::alloc, root);
         Obj::o_traits::deallocate(Obj::alloc, root, 1);
         return;

@@ -165,28 +165,29 @@ String String::ParseShortMathNotation() const {
 	{
 		switch(*cur)
 		{
-			case 'x' : // the only available variable
-			case '*' :
-			case '/' :
-			case '^' :
-			case '+' :
-			case '-' :
-			case '(' :
-			case ')' :
-			case '0' :
-			case '1' :
-			case '2' :
-			case '3' :
-			case '4' :
-			case '5' :
-			case '6' :
-			case '7' :
-			case '8' :
-			case '9' :
+		case 'e' :
+		case 'x' : // the only available variable
+		case '*' :
+		case '/' :
+		case '^' :
+		case '+' :
+		case '-' :
+		case '(' :
+		case ')' :
+		case '0' :
+		case '1' :
+		case '2' :
+		case '3' :
+		case '4' :
+		case '5' :
+		case '6' :
+		case '7' :
+		case '8' :
+		case '9' :
 			/* this symbol can appear only in case of arguments to logarithm, so
 			 * You should use it only in the right way!!!*/
-			case ',' :
-				*copy = *cur;
+		case ',' :
+			*copy = *cur;
 				++copy;
 				break;
 			case ' ' :
@@ -222,25 +223,25 @@ String String::ParseShortMathNotation() const {
 				cur += 2;
 				break;
 
-			case 't' :
-				*copy = 't';
-				++cur;
-				++copy;
-				break;
+		case 't' :
+			*copy = 't';
+			++cur;
+			++copy;
+			break;
 
-			case 'l' :
-				*copy = 'l';
-				++copy;
-				cur += 2;
-				break;
-			case 'a' :
-				cur += 3;
-				if(*cur == 'c') // arccos
-					*copy = 'a';
-				else *copy = 'n'; //arcsin
-				++copy;
-				cur += 2;
-				break;
+		case 'l' :
+			*copy = 'l';
+			++copy;
+			++cur;
+			break;
+		case 'a' :
+			cur += 3;
+			if (*cur == 'c') // arccos
+				*copy = 'a';
+			else *copy = 'n'; //arcsin
+			++copy;
+			cur += 2;
+			break;
 
 			default :  //this branch for the case of RUBBISH letters in the given string
 				std::cerr << "ERROR data in given string\n" << "The element is : " << *cur << std::endl;

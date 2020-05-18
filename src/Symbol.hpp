@@ -24,6 +24,7 @@ enum Index {
 	Tg,
 	Ctg, //11
 	Variable, //12
+	Exponenta,          // this
 	BOUND = Sinus
 };
 
@@ -34,26 +35,37 @@ class Symbol : public Obj{
     typedef std::allocator_traits<s_alloc> s_traits;
 
 public:
-    Symbol(int code, const char name);
+	Symbol(int code, const char name);
 
-    Obj* copy()const override;
+	Obj* copy() const override;
 
-    Symbol* create(int code, char c = '\0')const;
+	Symbol* create(int code, char c = '\0') const;
 
-    char get_name()const { return name_; }
-    int get_id()const { return id_; }
+	char get_name() const
+	{
+		return name_;
+	}
+	int get_id() const
+	{
+		return id_;
+	}
 
-    void print_info()const { std::cout << name_; }
+	void print_info() const
+	{
+		std::cout << name_;
+	}
 
-    Number* calc(float x, float y)const;
+	bool operator==(const Obj& obj) const override;
 
-    static s_alloc alloc_;  // the fact that this field is static make me feel much better!!!
+	Number* calc(float x, float y) const;
 
-    void set_name(const char c);
+	static s_alloc alloc_;  // the fact that this field is static make me feel much better!!!
 
-private:
+	void set_name(const char c);
+
+ private:
 	void deduce_id(const char c);
-    char name_;
+	char name_;
     /*This index field is used to invoke a function via pointer-to-member
      * using array of pointers in the classes of high layer.
      * It was added to the implementation on the 18.05.2020 due to

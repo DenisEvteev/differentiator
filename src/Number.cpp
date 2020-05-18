@@ -62,14 +62,21 @@ Obj* Number::create(Obj* obj){
         n_traits::construct(Number::alloc_, num, std::move(*this));
         return num;
     }
-    return nullptr;
+	return nullptr;
 }
 
-Number* Number::create(int type, float val)const{
+Number* Number::create(int type, float val) const
+{
 
-   Number* ptr = n_traits::allocate(Number::alloc_, 1);
-   n_traits::construct(Number::alloc_, ptr, type, val);
-   return ptr;
+	Number* ptr = n_traits::allocate(Number::alloc_, 1);
+	n_traits::construct(Number::alloc_, ptr, type, val);
+	return ptr;
+}
+
+bool Number::operator==(const Obj& obj) const
+{
+	auto rhs_ptr = dynamic_cast<const Number*>(&obj);
+	return (rhs_ptr->type_ == type_ && rhs_ptr->val_ == val_);
 }
 
 Number::n_alloc Number::alloc_ = Number::n_alloc();

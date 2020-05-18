@@ -18,7 +18,8 @@ public:
     Number(Number&& num)noexcept;
 
     //move assignment operator
-    Number&operator=(Number&& num)noexcept;
+	Number& operator=(Number&& num) noexcept;
+	bool operator==(const Obj& obj) const override;
 
     Number(const Number& num) = delete;
 

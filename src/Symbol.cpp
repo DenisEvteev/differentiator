@@ -47,6 +47,9 @@ void Symbol::deduce_id(const char c)
 	case 'x' :
 		id_ = Variable;
 		break;
+	case 'e' :
+		id_ = Exponenta;
+		break;
 	default :
 		std::cerr << "ERROR !!!! Unrecognized symbol : " << name_ << std::endl;
 		throw std::invalid_argument("Constructor cannot generate an object "
@@ -54,15 +57,22 @@ void Symbol::deduce_id(const char c)
 	}
 }
 
+bool Symbol::operator==(const Obj& obj) const
+{
+	auto rhs_ptr = dynamic_cast<const Symbol*>(&obj);
+	return (rhs_ptr->type_ == type_ && rhs_ptr->id_ == id_ && rhs_ptr->name_ == name_);
+}
+
 Symbol::Symbol(int code, const char name) : Obj(code, nullptr, nullptr, nullptr), name_(name)
 {
 	deduce_id(name_);
 }
 
-Symbol* Symbol::create(int code, char c)const {
-    Symbol* sym = s_traits::allocate(Symbol::alloc_, 1);
-    s_traits::construct(Symbol::alloc_, sym, code, c);
-    return sym;
+Symbol* Symbol::create(int code, char c) const
+{
+	Symbol* sym = s_traits::allocate(Symbol::alloc_, 1);
+	s_traits::construct(Symbol::alloc_, sym, code, c);
+	return sym;
 }
 
 Number* Symbol::calc(float x, float y)const{

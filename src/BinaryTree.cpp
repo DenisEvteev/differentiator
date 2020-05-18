@@ -63,9 +63,9 @@ void BinaryTree::set_root(Obj* root){
 void BinaryTree::PrintValue(std::ofstream& out, Obj* root)const{
 	assert(root);
     out << static_cast<Number*>(root)->get_val();
-    if(root->get_parent() && (root->get_parent())->get_right() != root
-       && dynamic_cast<Symbol*>(root->get_parent())->get_name() != '^')
-        out << "{}";
+    if (root->get_parent() && (root->get_parent())->get_right() != root
+		&& static_cast<Symbol*>(root->get_parent())->get_name() != '^')
+		out << "{}";
     out.flush();
 }
 
@@ -307,18 +307,26 @@ Obj* BinaryTree::SimplifyMinus(Obj *root) {
     //cases (0-smth)
     if(root->get_left() && CHECK_NOL_CHILD(root->get_left())){
         root->remove(root->get_left());
-        root->set_left(nullptr);
-        return root;
-    }
+		root->set_left(nullptr);
+		return root;
+	}
 
-    //cases (smth-0)
-    if(CHECK_NOL_CHILD(root->get_right())){
-        Obj* copy_func = root->get_left();
-        root->set_left(nullptr);
-        return WorkWithRightOne(copy_func, root);
-    }
+	//cases (smth-0)
+	if (CHECK_NOL_CHILD(root->get_right()))
+	{
+		Obj* copy_func = root->get_left();
+		root->set_left(nullptr);
+		return WorkWithRightOne(copy_func, root);
+	}
 
-    return MakeCount(root);
+	//case (smth - smth) this node is 0
+	if (root->get_left() && root->get_right() &&
+		root->get_left()->get_type() == root->get_right()->get_type() && *(root->get_left()) == *(root->get_right()))
+	{
+		return MakeNumericalNode(root, 0);
+	}
+
+	return MakeCount(root);
 }
 
 Obj* BinaryTree::SimplifyPlus(Obj *root) {
