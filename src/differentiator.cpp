@@ -77,7 +77,7 @@ void differentiator::ShowResult(){
 }
 
 void differentiator::LaTeX()const{
-    std::ofstream output("../new_tests/output.tex");
+    std::ofstream output("new_tests/output.tex");
     if(output.fail()){
         std::cerr << "output.tex cannot be made or opened\n";
         return;
@@ -91,9 +91,8 @@ void differentiator::LaTeX()const{
 
     output << "\\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}\n";
 
-    output << "\\title{Дифференциатор с выводом производной в \\LaTeX}\n"
-              "\\author{Евтеев Денис}"
-              "\\date{\\today}\n";
+	output << "\\title{Утрем нос Стивену Вольфраму!}\n"
+			  "\\date{\\today}\n";
 
     output << "\\begin{document}\n";
     output << "\\maketitle\n\n";
@@ -252,6 +251,7 @@ Obj* differentiator::GetP(){
             pivotal = GetN();
             return pivotal;
         }
+		return function;
     }
     else
         return unknown;

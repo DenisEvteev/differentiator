@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Obj.hpp"
 #include "Number.hpp"
 #include "Symbol.hpp"
 #include "../String_Lib/String.hpp"
@@ -12,8 +11,8 @@
 #include <fstream>
 #include <cstdio>
 #include <cassert>
-#include <map>
 #include <functional>
+
 enum SIZE{
 	SIZE_ARRAY_PRINT =  4,
 	SIZE_ARRAY_SIMPLIFY = 5,

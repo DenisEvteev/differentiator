@@ -6,13 +6,10 @@
 #define PARCE_CALCULATOR_PARSER_HPP
 
 #include "../String_Lib/String.hpp"
-#include "TrackingAllocator.hpp"
 #include <cassert>
 #include "Number.hpp"
 #include "Symbol.hpp"
 #include "BinaryTree.hpp"
-
-#include "Obj.hpp"
 
 enum {
 	SIZE_ARRAY_PTR_FUNC = 4,
@@ -84,19 +81,15 @@ private:
 
     void LaTeX()const;
 
-
  private :
-    BinaryTree         primary_expression;
-    BinaryTree         differentiate_expression;
-    /*This is a pointer to an array of pointers to methods in differentiator class
-     * to */
+	BinaryTree primary_expression;
+	BinaryTree differentiate_expression;
 
-	typedef Obj* (differentiator::*ptr_array_funcs)(Obj* obj)const;
-	ptr_array_funcs *  diff_type = nullptr;
-	String             _str;
-	const char*        _cur      = nullptr;
-	ptr_array_funcs * func       = nullptr;
-
+	typedef Obj* (differentiator::*ptr_array_funcs)(Obj* obj) const;
+	ptr_array_funcs* diff_type = nullptr;
+	String _str;
+	const char* _cur = nullptr;
+	ptr_array_funcs* func = nullptr;
 
 };
 

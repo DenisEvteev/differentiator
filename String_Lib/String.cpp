@@ -232,7 +232,7 @@ String String::ParseShortMathNotation() const {
 		case 'l' :
 			*copy = 'l';
 			++copy;
-			++cur;
+			cur += 2;
 			break;
 		case 'a' :
 			cur += 3;

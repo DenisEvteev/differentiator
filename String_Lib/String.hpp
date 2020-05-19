@@ -11,6 +11,7 @@
 #include <exception>
 #include <cstring>
 #include <cassert>
+#include <stdexcept>
 
 
 #define TOP_ASCII    127

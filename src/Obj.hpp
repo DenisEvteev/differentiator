@@ -40,27 +40,31 @@ public:
 
     virtual Obj* operator()(Obj* left, Obj* right);
 
-    //------------setters---------------------//
-    void set_parent(Obj* par);
-    void set_right(Obj* right);
-    void set_left(Obj* left);
-    //---------------------------------------//
+	//------------setters---------------------//
+	void set_parent(Obj* par);
+	void set_right(Obj* right);
+	void set_left(Obj* left);
+	//---------------------------------------//
 
-    void MakeChild(Obj* child);
+	void MakeChild(Obj* child);
 
-    virtual void print_info() const { std::cout << "Type of this object is : " << type_ << std::endl; }
+	virtual void print_info() const
+	{
+		std::cout << "Type of this object is : " << type_ << std::endl;
+	}
 
-    virtual Obj* copy() const {};
-    virtual bool operator==(const Obj& obj) const;
+	virtual Obj* copy() const
+	{
+		std::cout << "Copy method in base class has worked" << std::endl;
+		return nullptr;
+	};
+	virtual bool operator==(const Obj& obj) const;
 	void remove(Obj* root);
 
-    Obj* create(int type)const;
+	Obj* create(int type) const;
 
-
-
-
-    //------------getters---------------------//
-    int get_type()const;
+	//------------getters---------------------//
+	int get_type() const;
     Obj* get_left()const;
     Obj* get_right()const;
     Obj* get_parent()const;
