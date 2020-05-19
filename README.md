@@ -67,7 +67,7 @@ Some updated examples in the form the Acronis company wanted me :
 ---------------------------------------------------
 1. [all_functions](https://github.com/DenisEvteev/differentiator/blob/master/new_tests/all_functions.pdf)
 
-2. [smth_minus_smth_simplification](https://github.com/DenisEvteev/differentiator/blob/master/new_tests/ma)
+2. [smth_minus_smth_simplification](https://github.com/DenisEvteev/differentiator/blob/master/new_tests/smth_minus_smth.pdf)
 
 And for the future of the project TODO list :
 -------------------------------------------
