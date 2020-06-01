@@ -5,25 +5,28 @@
 #include "String.hpp"
 
 String::String(const char* str) {
-    size_ = StrLen(str);
-    num_bytes_ = CountBytes(str);
-    str_ = new char[num_bytes_];
-    for(int i = 0; i < num_bytes_; ++i)
-        str_[i] = str[i];
+	size_ = StrLen(str);
+	num_bytes_ = CountBytes(str);
+	is_english = (size_ == num_bytes_ - 1);
+	str_ = new char[num_bytes_];
+	for (int i = 0; i < num_bytes_; ++i)
+		str_[i] = str[i];
 }
 
 String::String(String&& st)noexcept{
     MoveData(std::move(st));
 }
 
-void String::MoveData(String&& st)noexcept {
-    str_ = st.str_;
-    size_ = st.size_;
-    num_bytes_ = st.num_bytes_;
-    is_english = st.is_english;
-    st.size_ = 0;
-    st.num_bytes_ = 0;
-    st.str_ = nullptr;
+void String::MoveData(String&& st)noexcept
+{
+	str_ = st.str_;
+	size_ = st.size_;
+	num_bytes_ = st.num_bytes_;
+	is_english = st.is_english;
+
+	st.size_ = 0;
+	st.num_bytes_ = 0;
+	st.str_ = nullptr;
 }
 
 String& String::operator=(String&& st) noexcept{
@@ -97,24 +100,28 @@ std::istream& operator>>(std::istream& in, String& s){
     char c{'\0'};
 
     char static_array[SIZE_ARRAY_FOR_STR];
-    for(int i = 0; i < SIZE_ARRAY_FOR_STR; ++i)
-        static_array[i] = '\0';
+	std::memset(static_array, 0, SIZE_ARRAY_FOR_STR);
 
     std::cout << "Enter the str : " << std::endl;
 
     //--------------------------------------------------------//
     int i{0};
     errno = 0;
-    while(c != '\n'){
-        scanf("%c", &c);
-        assert(errno == 0);
-        if(c == '\n' && flag == 0){
-            flag = 1;
-            continue;
-        }
-        static_array[i] = c;
-        ++i;
-    }
+    while(c != '\n')
+	{
+		if (i == SIZE_ARRAY_FOR_STR)
+			throw std::runtime_error("Too big string { We cannot read such a big string for input }");
+		scanf("%c", &c);
+		if (errno != 0)
+			throw std::runtime_error("error in scanf function { Reading string from input }");
+		if (c == '\n' && flag == 0)
+		{
+			flag = 1;
+			continue;
+		}
+		static_array[i] = c;
+		++i;
+	}
     //______________________________________________________//
 
     s = String(static_array);

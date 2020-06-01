@@ -67,19 +67,18 @@ class BinaryTree final
 	void PrintFunc(std::ofstream& out, Obj* root) const;
 	void PrintUnknown(std::ofstream& out, Obj* root) const;
 
-	static void create_static_objects();
-	static void clean_static_storage();
  private:
 
 	Obj* root_ = nullptr;
 
 	typedef void (BinaryTree::*ptr_print)(std::ofstream&, Obj*) const;
-	static ptr_print* printer;
+	static ptr_print printer[SIZE_ARRAY_PRINT];
+
 	typedef Obj* (BinaryTree::*ptr_funcs)(Obj*);
-	static ptr_funcs* simplifier;
+	static ptr_funcs simplifier[SIZE_ARRAY_SIMPLIFY];
 	/*static field to convert short math notation into
 	 * full mathematical notation for dumping the right representation
 	 * of functions into a file stream*/
-	static String * func_names;
+	static String func_names[SIZE_ARRAY_FUNCTIONS];
 };
 

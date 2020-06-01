@@ -3,43 +3,6 @@
 //
 
 #include "differentiator.hpp"
-#define DEBUG
-
-differentiator::differentiator(){
-    std::cout << "Enter the expresion : ";
-    std::cin >> _str;  //initial string in traditional mathematical notation
-
-    if(_str.size() != _str.GetNumBytes() - 1)
-    	throw std::invalid_argument("not only ASCII symbols in the input string");
-
-    _str = _str.ParseShortMathNotation(); // create the short mathematical notation of the input expression
-#ifdef DEBUG
-	std::cout << _str << std::endl;
-#endif
-    _cur = _str.GetStr();
-
-    diff_type = new ptr_array_funcs[SIZE_ARRAY_PTR_FUNC];
-    diff_type[0] = &differentiator::Diff_Value;
-	diff_type[1] = &differentiator::Diff_Operator;
-	diff_type[2] = &differentiator::Diff_Func;
-	diff_type[3] = &differentiator::Diff_Unknown;
-
-	func = new ptr_array_funcs[SIZE_ARRAY_EXACT_SYMBOL_DIFF];
-	func[0] = &differentiator::Plus;
-	func[1] = &differentiator::Minus;
-	func[2] = &differentiator::Multiplication;
-	func[3] = &differentiator::Division;
-	func[4] = &differentiator::Exponentiation;
-
-	func[5] = &differentiator::Sinus;
-	func[6] = &differentiator::Cosinus;
-	func[7] = &differentiator::Arcsin;
-	func[8] = &differentiator::Logarithm;
-	func[9] = &differentiator::Arccos;
-	func[10] = &differentiator::Tg;
-	func[11] = &differentiator::Ctg;
-
-}
 
 Obj* differentiator::Create(int type, const char c) const{
     Symbol* symbol = nullptr;
@@ -51,15 +14,7 @@ Obj* differentiator::Create(float v)const {
     return num->create(Value, v);
 }
 
-differentiator::~differentiator() {
-
-	delete [] diff_type;
-	delete [] func;
-}
-
 void differentiator::ShowResult(){
-
-	BinaryTree::create_static_objects();
 
 	/*In my realization in constructor of tree */
 	primary_expression = BinaryTree(GetG());
@@ -71,8 +26,6 @@ void differentiator::ShowResult(){
     differentiate_expression.SimplifyTree(differentiate_expression.get_root());
 
     LaTeX();
-
-    BinaryTree::clean_static_storage();
 
 }
 
@@ -228,7 +181,8 @@ Obj* differentiator::GetE(){
         (*pivotal)(left_ch, right_ch);
 
     }
-    return pivotal;
+
+	return pivotal;
 }
 
 Obj* differentiator::GetP(){

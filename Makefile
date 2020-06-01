@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -std=c++17 -O3
 
 
 #All objective files in the project without external libraries [String_Lib]

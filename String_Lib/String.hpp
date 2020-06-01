@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
+#include <cstdlib>
 
 
 #define TOP_ASCII    127
@@ -49,6 +50,10 @@ public:
     int GetNumBytes()const noexcept;
     int size()const noexcept;
     bool IsThisByteAscii(char c) const;
+	bool eng() const noexcept
+	{
+		return is_english;
+	}
 
     friend std::ostream&operator<<(std::ostream& out, const String& s);
     friend std::istream&operator>>(std::istream& in, String& s);

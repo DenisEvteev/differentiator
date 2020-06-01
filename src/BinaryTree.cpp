@@ -4,41 +4,24 @@
 
 #include "BinaryTree.hpp"
 
-BinaryTree::ptr_print* BinaryTree::printer    = nullptr;
-BinaryTree::ptr_funcs* BinaryTree::simplifier = nullptr;
-String               * BinaryTree::func_names = nullptr;
+BinaryTree::ptr_print BinaryTree::printer[SIZE_ARRAY_PRINT] = { &BinaryTree::PrintValue,
+																&BinaryTree::PrintOperator,
+																&BinaryTree::PrintFunc,
+																&BinaryTree::PrintUnknown };
 
-void BinaryTree::create_static_objects() {
-	printer = new ptr_print[SIZE_ARRAY_PRINT];
-	printer[0] = &BinaryTree::PrintValue;
-	printer[1] = &BinaryTree::PrintOperator;
-	printer[2] = &BinaryTree::PrintFunc;
-	printer[3] = &BinaryTree::PrintUnknown;
+BinaryTree::ptr_funcs BinaryTree::simplifier[SIZE_ARRAY_SIMPLIFY] = { &BinaryTree::SimplifyPlus,
+																	  &BinaryTree::SimplifyMinus,
+																	  &BinaryTree::SimplifyMultiplication,
+																	  &BinaryTree::SimplifyDivision,
+																	  &BinaryTree::SimplifyExponent };
 
-	simplifier = new ptr_funcs[SIZE_ARRAY_SIMPLIFY];
-	simplifier[0] = &BinaryTree::SimplifyPlus;
-	simplifier[1] = &BinaryTree::SimplifyMinus;
-	simplifier[2] = &BinaryTree::SimplifyMultiplication;
-	simplifier[3] = &BinaryTree::SimplifyDivision;
-	simplifier[4] = &BinaryTree::SimplifyExponent;
-
-	func_names = new String[SIZE_ARRAY_FUNCTIONS]; //at this point just default constructor will work
-	/*All objects below will be created and then moved to the array of Strings*/
-	func_names[0] = String("\\sin");
-	func_names[1] = String("\\cos");
-	func_names[2] = String("\\arcsin");
-	func_names[3] = String("\\log");
-	func_names[4] = String("\\arccos");
-	func_names[5] = String("\\tg");
-	func_names[6] = String("\\ctg");
-
-}
-
-void BinaryTree::clean_static_storage() {
-	delete [] printer;
-	delete [] simplifier;
-	delete [] func_names;
-}
+String                BinaryTree::func_names[SIZE_ARRAY_FUNCTIONS] = { String("\\sin"),
+																	   String("\\cos"),
+																	   String("\\arcsin"),
+																	   String("\\log"),
+																	   String("\\arccos"),
+																	   String("\\tg"),
+																	   String("\\ctg") };
 
 BinaryTree::~BinaryTree()
 {

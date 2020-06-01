@@ -7,6 +7,7 @@
 
 #include "../String_Lib/String.hpp"
 #include <cassert>
+#include <utility>
 #include "Number.hpp"
 #include "Symbol.hpp"
 #include "BinaryTree.hpp"
@@ -30,20 +31,20 @@ enum class FUNC: const char{
     CTG = 'g'
 };
 
-class differentiator final {
-public:
-    differentiator();
-    differentiator(const differentiator& copy)           = delete;
-    differentiator&operator=(const differentiator& copy) = delete;
-    void ShowResult();
-    ~differentiator();
+class differentiator final
+{
+ public:
+	template<class StringType>
+	explicit differentiator(StringType&& str);
+	differentiator(const differentiator& copy) = delete;
+	differentiator& operator=(const differentiator& copy) = delete;
+	void ShowResult();
 
-
-private:
+ private:
 	Obj* GetG();
-    Obj* GetN();
-    Obj* GetE();
-    Obj* GetT();
+	Obj* GetN();
+	Obj* GetE();
+	Obj* GetT();
     Obj* GetP();
     Obj* GetF();
     Obj* GetU();     // get unknown
@@ -74,24 +75,44 @@ private:
 
     Obj* MakeOperatorForMulDiv(Obj* obj, const char link)const;
 
-    Obj* PlusMinusDiff(Obj* obj, const char type)const;
+	Obj* PlusMinusDiff(Obj* obj, const char type) const;
 
-    Obj* Create(int type, const char c)const;
-    Obj* Create(float v)const;
+	Obj* Create(int type, const char c) const;
+	Obj* Create(float v) const;
 
-    void LaTeX()const;
+	void LaTeX() const;
 
  private :
 	BinaryTree primary_expression;
 	BinaryTree differentiate_expression;
+	String _str;
 
 	typedef Obj* (differentiator::*ptr_array_funcs)(Obj* obj) const;
-	ptr_array_funcs* diff_type = nullptr;
-	String _str;
+
+	ptr_array_funcs diff_type[SIZE_ARRAY_PTR_FUNC] = { &differentiator::Diff_Value,
+													   &differentiator::Diff_Operator,
+													   &differentiator::Diff_Func,
+													   &differentiator::Diff_Unknown };
 	const char* _cur = nullptr;
-	ptr_array_funcs* func = nullptr;
+	ptr_array_funcs func[SIZE_ARRAY_EXACT_SYMBOL_DIFF] = { &differentiator::Plus,
+														   &differentiator::Minus,
+														   &differentiator::Multiplication,
+														   &differentiator::Division,
+														   &differentiator::Exponentiation,
+														   &differentiator::Sinus,
+														   &differentiator::Cosinus,
+														   &differentiator::Arcsin,
+														   &differentiator::Logarithm,
+														   &differentiator::Arccos,
+														   &differentiator::Tg,
+														   &differentiator::Ctg };
 
 };
 
+template<class StringType>
+differentiator::differentiator(StringType&& str) : _str(std::forward<StringType>(str))
+{
+	_cur = _str.GetStr();
+}
 
 #endif //PARCE_CALCULATOR_PARSER_HPP
